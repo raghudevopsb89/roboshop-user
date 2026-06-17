@@ -3,10 +3,12 @@ const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { register, metricsMiddleware } = require('./metrics');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(metricsMiddleware);
 
 const MONGO_URL = process.env.MONGO_URL || 'mongodb://mongodb:27017/users';
 const JWT_SECRET = process.env.JWT_SECRET || 'roboshop-secret-key';
@@ -33,6 +35,11 @@ async function connectDB() {
 // Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', service: 'user' });
+});
+
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
 });
 
 // Register
