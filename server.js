@@ -6,8 +6,36 @@ const jwt = require('jsonwebtoken');
 const { register, metricsMiddleware } = require('./metrics');
 
 const app = express();
+
+function log(level, msg, extra) {
+    const line = { ts: new Date().toISOString(), level, service: 'user', msg, ...extra };
+    process.stdout.write(JSON.stringify(line) + '\n');
+}
+
+let reqSeq = 0;
+function requestLogger(req, res, next) {
+    if (req.path === '/metrics' || req.path === '/health') return next();
+    const reqId = req.headers['x-request-id'] || `${process.pid}-${++reqSeq}`;
+    req.reqId = reqId;
+    const start = process.hrtime.bigint();
+    log('info', 'req.start', { reqId, method: req.method, path: req.path, remote: req.ip });
+
+    let settled = false;
+    const finish = (event) => {
+        if (settled) return;
+        settled = true;
+        const durMs = Number(process.hrtime.bigint() - start) / 1e6;
+        log('info', `req.${event}`, { reqId, method: req.method, path: req.path, status: res.statusCode, durMs: +durMs.toFixed(1) });
+    };
+    res.on('finish', () => finish('finish'));
+    res.on('close', () => finish(res.writableEnded ? 'finish' : 'close'));
+    req.on('aborted', () => log('warn', 'req.aborted', { reqId, method: req.method, path: req.path }));
+    next();
+}
+
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
 app.use(metricsMiddleware);
 
 const MONGO_URL = process.env.MONGO_URL || 'mongodb://mongodb:27017/users';
@@ -140,8 +168,30 @@ app.get('/validate/:userId', async (req, res) => {
     }
 });
 
+let server;
 connectDB().then(() => {
-    app.listen(PORT, () => {
-        console.log(`User service listening on port ${PORT}`);
+    server = app.listen(PORT, () => {
+        log('info', 'server.listen', { port: PORT, pid: process.pid });
     });
+});
+
+function shutdown(signal) {
+    log('warn', 'server.shutdown.start', { signal });
+    if (!server) return process.exit(0);
+    server.close((err) => {
+        log(err ? 'error' : 'info', 'server.shutdown.done', { signal, error: err && err.message });
+        process.exit(err ? 1 : 0);
+    });
+    setTimeout(() => {
+        log('error', 'server.shutdown.forced', { signal });
+        process.exit(1);
+    }, 25000).unref();
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('uncaughtException', (err) => {
+    log('error', 'uncaughtException', { error: err.message, stack: err.stack });
+});
+process.on('unhandledRejection', (reason) => {
+    log('error', 'unhandledRejection', { reason: String(reason) });
 });
