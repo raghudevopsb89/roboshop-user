@@ -4,6 +4,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { register, metricsMiddleware } = require('./metrics');
+require('newrelic');
 
 const app = express();
 
