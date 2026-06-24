@@ -1,7 +1,9 @@
 FROM node:26-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --production
+RUN apk add --no-cache --virtual .build python3 make g++ \
+ && npm install --production \
+ && apk del .build
 COPY . .
 EXPOSE 8001
 CMD ["node", "server.js"]

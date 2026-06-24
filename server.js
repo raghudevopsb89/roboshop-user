@@ -1,10 +1,10 @@
+const newrelic = require('newrelic');
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { register, metricsMiddleware } = require('./metrics');
-require('newrelic');
 
 const app = express();
 
@@ -83,7 +83,7 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Username or email already exists' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await newrelic.startSegment('bcrypt.hash', true, () => bcrypt.hash(password, 10));
         const user = {
             username,
             email,
@@ -109,7 +109,8 @@ app.post('/login', async (req, res) => {
         const { username, password } = req.body;
         const user = await db.collection('users').findOne({ username });
 
-        if (!user || !(await bcrypt.compare(password, user.password))) {
+        const passwordOk = user && await newrelic.startSegment('bcrypt.compare', true, () => bcrypt.compare(password, user.password));
+        if (!passwordOk) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
