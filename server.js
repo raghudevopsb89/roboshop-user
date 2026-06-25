@@ -42,6 +42,7 @@ app.use(metricsMiddleware);
 const MONGO_URL = process.env.MONGO_URL || 'mongodb://mongodb:27017/users';
 const JWT_SECRET = process.env.JWT_SECRET || 'roboshop-secret-key';
 const PORT = process.env.PORT || 8001;
+const BCRYPT_COST = parseInt(process.env.BCRYPT_COST || '8', 10);
 
 let db;
 
@@ -83,7 +84,7 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Username or email already exists' });
         }
 
-        const hashedPassword = await newrelic.startSegment('bcrypt.hash', true, () => bcrypt.hash(password, 10));
+        const hashedPassword = await newrelic.startSegment('bcrypt.hash', true, () => bcrypt.hash(password, BCRYPT_COST));
         const user = {
             username,
             email,
