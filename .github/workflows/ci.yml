@@ -44,3 +44,43 @@ jobs:
           cd helm
           make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=dev
 
+  qa-deploy:
+    needs: publish
+    runs-on: dev-deploy
+    steps:
+      - name: Checkout helm repo
+        uses: actions/checkout@v7
+        with:
+          repository: raghudevopsb89/roboshop-helm-v1
+          path: helm
+      - run: |
+          echo cd helm
+          echo make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=dev
+
+  uat-deploy:
+    needs: publish
+    runs-on: qa-deploy
+    steps:
+      - name: Checkout helm repo
+        uses: actions/checkout@v7
+        with:
+          repository: raghudevopsb89/roboshop-helm-v1
+          path: helm
+      - run: |
+          echo cd helm
+          echo make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=dev
+
+  prod-deploy:
+    needs: publish
+    runs-on: uat-deploy
+    steps:
+      - name: Checkout helm repo
+        uses: actions/checkout@v7
+        with:
+          repository: raghudevopsb89/roboshop-helm-v1
+          path: helm
+      - run: |
+          echo cd helm
+          echo make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=prod
+
+
