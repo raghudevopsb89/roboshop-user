@@ -31,3 +31,17 @@ jobs:
       - uses: actions/checkout@v7
       - run: make docker-push
 
+  publish:
+    needs: publish
+    runs-on: self-hosted
+    steps:
+      - name: Checkout helm repo
+        uses: actions/checkout@v7
+        with:
+          repository: raghudevopsb89/roboshop-helm-v1
+          path: helm
+      - run: |
+          cd helm
+          env
+          #make upgrade component_name=user
+
