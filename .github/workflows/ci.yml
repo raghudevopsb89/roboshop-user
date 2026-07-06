@@ -1,0 +1,33 @@
+name: User CI Pipeline
+run-name: User CI Pipeline
+on: [push, workflow_dispatch]
+
+jobs:
+  lint:
+    runs-on: self-hosted
+    steps:
+      - run: echo "npx eslint ."
+
+  build:
+    needs: lint
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v7
+      - run: |
+          ls -l
+          pwd
+          make docker-build
+
+  test:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+
+  publish:
+    needs: test
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v7
+      - run: make docker-push
+
