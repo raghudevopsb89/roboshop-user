@@ -45,8 +45,8 @@ jobs:
           make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=dev
 
   qa-deploy:
-    needs: publish
-    runs-on: dev-deploy
+    needs: dev-deploy
+    runs-on: self-hosted
     steps:
       - name: Checkout helm repo
         uses: actions/checkout@v7
@@ -58,8 +58,8 @@ jobs:
           echo make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=dev
 
   uat-deploy:
-    needs: publish
-    runs-on: qa-deploy
+    needs: qa-deploy
+    runs-on: self-hosted
     steps:
       - name: Checkout helm repo
         uses: actions/checkout@v7
@@ -71,8 +71,8 @@ jobs:
           echo make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=dev
 
   prod-deploy:
-    needs: publish
-    runs-on: uat-deploy
+    needs: uat-deploy
+    runs-on: self-hosted
     steps:
       - name: Checkout helm repo
         uses: actions/checkout@v7
