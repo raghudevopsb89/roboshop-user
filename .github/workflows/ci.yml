@@ -42,5 +42,5 @@ jobs:
           path: helm
       - run: |
           cd helm
-          make upgrade component_name=user github_sha=${GITHUB_SHA}
+          make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=dev
 
