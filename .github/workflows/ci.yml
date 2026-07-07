@@ -47,6 +47,7 @@ jobs:
   qa-deploy:
     needs: dev-deploy
     runs-on: self-hosted
+    environment: qa
     steps:
       - name: Checkout helm repo
         uses: actions/checkout@v7
@@ -60,6 +61,7 @@ jobs:
   uat-deploy:
     needs: qa-deploy
     runs-on: self-hosted
+    environment: uat
     steps:
       - name: Checkout helm repo
         uses: actions/checkout@v7
@@ -73,6 +75,7 @@ jobs:
   prod-deploy:
     needs: uat-deploy
     runs-on: self-hosted
+    environment: prod
     steps:
       - name: Checkout helm repo
         uses: actions/checkout@v7
