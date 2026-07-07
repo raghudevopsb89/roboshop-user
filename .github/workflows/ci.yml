@@ -8,82 +8,15 @@ jobs:
     steps:
       - run: echo "npx eslint ."
 
-  build:
-    needs: lint
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v7
-      - run: |
-          ls -l
-          pwd
-          make docker-build
-
   test:
-    needs: build
+    needs: lint
     runs-on: self-hosted
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
 
-  publish:
-    needs: test
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v7
-      - run: make docker-push
-
-  dev-deploy:
-    needs: publish
-    runs-on: self-hosted
-    steps:
-      - name: Checkout helm repo
-        uses: actions/checkout@v7
-        with:
-          repository: raghudevopsb89/roboshop-helm-v1
-          path: helm
-      - run: |
-          cd helm
-          make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=dev
-
-  qa-deploy:
-    needs: dev-deploy
-    runs-on: self-hosted
-    environment: qa
-    steps:
-      - name: Checkout helm repo
-        uses: actions/checkout@v7
-        with:
-          repository: raghudevopsb89/roboshop-helm-v1
-          path: helm
-      - run: |
-          echo cd helm
-          echo make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=dev
-
-  uat-deploy:
-    needs: qa-deploy
-    runs-on: self-hosted
-    environment: uat
-    steps:
-      - name: Checkout helm repo
-        uses: actions/checkout@v7
-        with:
-          repository: raghudevopsb89/roboshop-helm-v1
-          path: helm
-      - run: |
-          echo cd helm
-          echo make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=dev
-
-  prod-deploy:
-    needs: uat-deploy
-    runs-on: self-hosted
-    environment: prod
-    steps:
-      - name: Checkout helm repo
-        uses: actions/checkout@v7
-        with:
-          repository: raghudevopsb89/roboshop-helm-v1
-          path: helm
-      - run: |
-          echo cd helm
-          echo make upgrade component_name=user github_sha=${GITHUB_SHA} cluster_env=prod
+  ci:
+    uses: raghudevopsb89/github-actions/.github/workflows/ci.yml@main
+    with:
+      component_name: user
 
 
