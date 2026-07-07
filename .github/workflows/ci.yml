@@ -15,6 +15,7 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
 
   ci:
+    needs: test
     uses: raghudevopsb89/github-actions/.github/workflows/ci.yml@main
     with:
       component_name: user
