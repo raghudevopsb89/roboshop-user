@@ -12,10 +12,26 @@ jobs:
     needs: lint
     runs-on: self-hosted
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm test
+
+  integration-test:
+    needs: test
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run test:integration
 
   ci:
-    needs: test
+    needs: integration-test
     uses: raghudevopsb89/github-actions/.github/workflows/ci.yml@main
     with:
       component_name: user

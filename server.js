@@ -70,13 +70,14 @@ const PORT = process.env.PORT || 8001;
 const BCRYPT_COST = parseInt(process.env.BCRYPT_COST || '8', 10);
 
 let db;
+let mongoClient;
 
 async function connectDB() {
     const maxRetries = 30;
     for (let i = 0; i < maxRetries; i++) {
         try {
-            const client = await MongoClient.connect(MONGO_URL);
-            db = client.db();
+            mongoClient = await MongoClient.connect(MONGO_URL);
+            db = mongoClient.db();
             log('info', 'mongo.connected', { url: MONGO_URL });
             return;
         } catch (err) {
@@ -85,6 +86,13 @@ async function connectDB() {
         }
     }
     throw new Error('Failed to connect to MongoDB');
+}
+
+async function closeDB() {
+    if (mongoClient) {
+        await mongoClient.close();
+        mongoClient = undefined;
+    }
 }
 
 app.get('/health', (req, res) => {
@@ -206,16 +214,6 @@ app.get('/validate/:userId', async (req, res) => {
 
 let server;
 const LISTEN_BACKLOG = parseInt(process.env.LISTEN_BACKLOG || '2048', 10);
-connectDB().then(() => {
-    server = app.listen(PORT, LISTEN_BACKLOG, () => {
-        log('info', 'server.listen', { port: PORT, pid: process.pid, backlog: LISTEN_BACKLOG });
-    });
-    server.keepAliveTimeout = 65000;
-    server.headersTimeout = 70000;
-}).catch((err) => {
-    log('error', 'server.startup.failed', { error: err.message });
-    process.exit(1);
-});
 
 function shutdown(signal) {
     log('warn', 'server.shutdown.start', { signal });
@@ -229,13 +227,31 @@ function shutdown(signal) {
         process.exit(1);
     }, 25000).unref();
 }
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
-process.on('uncaughtException', (err) => {
-    log('error', 'uncaughtException', { error: err.message, stack: err.stack });
-});
-process.on('unhandledRejection', (reason) => {
-    log('error', 'unhandledRejection', { reason: String(reason) });
-});
+
+// Only start the server / connect to infra when run directly (node server.js).
+// When required by tests, export the app and helpers so supertest can drive it.
+if (require.main === module) {
+    connectDB().then(() => {
+        server = app.listen(PORT, LISTEN_BACKLOG, () => {
+            log('info', 'server.listen', { port: PORT, pid: process.pid, backlog: LISTEN_BACKLOG });
+        });
+        server.keepAliveTimeout = 65000;
+        server.headersTimeout = 70000;
+    }).catch((err) => {
+        log('error', 'server.startup.failed', { error: err.message });
+        process.exit(1);
+    });
+
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+    process.on('uncaughtException', (err) => {
+        log('error', 'uncaughtException', { error: err.message, stack: err.stack });
+    });
+    process.on('unhandledRejection', (reason) => {
+        log('error', 'unhandledRejection', { reason: String(reason) });
+    });
+}
+
+module.exports = { app, connectDB, closeDB };
 
 ///

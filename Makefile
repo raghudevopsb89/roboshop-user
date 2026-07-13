@@ -1,10 +1,16 @@
-.PHONY: build run docker-build db-init clean
+.PHONY: build run unit-test integration-test docker-build db-init clean
 
 build:
 	npm install
 
 run:
 	MONGO_URL=mongodb://localhost:27017/users node server.js
+
+unit-test:
+	npm test
+
+integration-test:
+	npm run test:integration
 
 docker-build:
 	env
