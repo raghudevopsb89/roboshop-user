@@ -1,4 +1,4 @@
-.PHONY: build run unit-test integration-test docker-build db-init clean
+.PHONY: build run unit-test coverage integration-test docker-build db-init clean
 
 build:
 	npm install
@@ -8,6 +8,9 @@ run:
 
 unit-test:
 	npm test
+
+coverage:
+	npm run test:coverage
 
 integration-test:
 	npm run test:integration

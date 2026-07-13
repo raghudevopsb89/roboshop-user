@@ -12,4 +12,11 @@ module.exports = {
     // (`*.integration.test.js`) also end in `.test.js`, so exclude them here.
     // They run via `npm run test:integration` (jest.integration.config.js).
     testPathIgnorePatterns: ['/node_modules/', '\\.integration\\.test\\.js$'],
+    // Coverage: disabled by default, enabled via the `--coverage` CLI flag.
+    // Sonar consumes coverage/lcov.info from the unit run.
+    collectCoverage: false,
+    coverageReporters: ['lcov', 'text-summary'],
+    coverageDirectory: 'coverage',
+    // Include ALL source files so Sonar counts files with 0% coverage too.
+    collectCoverageFrom: ['server.js'],
 };
