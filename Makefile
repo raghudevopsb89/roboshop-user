@@ -28,5 +28,7 @@ db-init:
 clean:
 	rm -rf node_modules
 
+sonar_token := $(shell az keyvault secret show --name sonarqube-token --vault-name roboshopb89 --query "value" -o tsv)
+
 sonar-scan:
-	/home/runner/sonar-scanner-7.1.0.4889-linux-x64/bin/sonar-scanner -Dsonar.projectKey=roboshop-user -Dsonar.host.url=http://10.1.0.46:9000 -Dsonar.token=sqa_a82ce4ca385f0ec1f5929abec8fb4fe2945a12c8 -Dsonar.qualitygate.wait=true -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+	echo /home/runner/sonar-scanner-7.1.0.4889-linux-x64/bin/sonar-scanner -Dsonar.projectKey=roboshop-user -Dsonar.host.url=http://10.1.0.46:9000 -Dsonar.token=$(sonar_token) -Dsonar.qualitygate.wait=true -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
