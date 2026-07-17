@@ -3,7 +3,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN apk add --no-cache --virtual .build python3 make g++ \
  && npm install --production \
- && apk del .build
+ && apk del .build \
+ # npm's own bundled undici (CVE-2026-12151) ships in the base image and is
+ # unused at runtime (container only runs `node server.js`); remove it so it
+ # can't trip image scanners.
+ && rm -rf /usr/local/lib/node_modules/npm/node_modules/undici
 COPY . .
 EXPOSE 8001
 ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
