@@ -27,6 +27,7 @@
     "testcontainers": "^10.13.2"
   },
   "overrides": {
-    "tar": "^7.5.11"
+    "tar": "^7.5.11",
+    "undici" : "^6.27.0"
   }
 }
