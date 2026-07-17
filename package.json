@@ -17,7 +17,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.3.0",
     "prom-client": "^15.1.3",
-    "newrelic": "latest"
+    "newrelic": "latest",
+    "tar" : "latest",
+    "undici" : "latest"
   },
   "devDependencies": {
     "jest": "^29.7.0",
