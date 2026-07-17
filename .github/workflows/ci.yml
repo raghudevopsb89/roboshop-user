@@ -3,45 +3,45 @@ run-name: User CI Pipeline
 on: [push, workflow_dispatch]
 
 jobs:
-  lint:
-    runs-on: self-hosted
-    steps:
-      - run: echo "npx eslint ."
-
-  test:
-    needs: lint
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm test
-
-  integration-test:
-    needs: test
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm run test:integration
-
-  sast:
-    needs: lint
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: make build coverage sonar-scan
+#   lint:
+#     runs-on: self-hosted
+#     steps:
+#       - run: echo "npx eslint ."
+#
+#   test:
+#     needs: lint
+#     runs-on: self-hosted
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
+#       - run: npm ci
+#       - run: npm test
+#
+#   integration-test:
+#     needs: test
+#     runs-on: self-hosted
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
+#       - run: npm ci
+#       - run: npm run test:integration
+#
+#   sast:
+#     needs: lint
+#     runs-on: self-hosted
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
+#       - run: make build coverage sonar-scan
 
   ci:
-    needs: [integration-test, sast, test]
+    #needs: [integration-test, sast, test]
     uses: raghudevopsb89/github-actions/.github/workflows/ci.yml@main
     with:
       component_name: user

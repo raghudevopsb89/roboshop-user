@@ -22,6 +22,9 @@ docker-build:
 docker-push:
 	docker push raghudevopsb89.azurecr.io/roboshop-user:${GITHUB_SHA}
 
+docker-scan:
+	trivy image raghudevopsb89.azurecr.io/roboshop-user:${GITHUB_SHA} --exit-code 1 --ignore-unfixed -s HIGH,CRITICAL
+
 db-init:
 	mongosh --host $${MONGO_HOST:-localhost} < db/master-data.js
 
